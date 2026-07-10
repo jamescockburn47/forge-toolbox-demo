@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Forge Toolbox</title>
+  <style>
+    :root { color-scheme: dark; }
+    body { margin: 0; background: #0d1017; color: #dfe4ea; font: 15px/1.5 system-ui, sans-serif; }
+    header { padding: 28px 24px 8px; }
+    header h1 { margin: 0; font: 700 26px Georgia, serif; color: #e9d7a6; letter-spacing: 0.02em; }
+    header p { margin: 6px 0 0; color: #9aa4af; }
+    main { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); padding: 20px 24px 40px; }
+    .tool { background: rgba(255,255,255,0.03); border: 1px solid rgba(201,168,106,0.22); border-radius: 12px; padding: 16px; }
+    .tool h2 { margin: 0 0 10px; font: 600 15px Georgia, serif; letter-spacing: 0.06em; color: #c9a86a; text-transform: uppercase; }
+    .tool label { display: block; font-size: 12px; color: #8f99ab; margin: 8px 0 4px; }
+    .tool textarea, .tool input, .tool select { width: 100%; box-sizing: border-box; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: #e8eaf0; border-radius: 7px; padding: 8px 10px; font: 13px/1.5 ui-monospace, monospace; }
+    .tool textarea { min-height: 84px; resize: vertical; }
+    .tool button { margin-top: 10px; background: linear-gradient(180deg, #e8c86e, #b8912f); color: #1a1712; border: none; border-radius: 7px; padding: 8px 16px; font: 600 13px Georgia, serif; cursor: pointer; }
+    .tool button:hover { filter: brightness(1.06); }
+    .tool .out { margin-top: 10px; font: 12px/1.5 ui-monospace, monospace; white-space: pre-wrap; word-break: break-word; color: #7fd4e0; }
+    .empty { color: #6b7482; grid-column: 1 / -1; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Forge Toolbox</h1>
+    <p>A developer toolbox, built tool by tool by M3 agents collaborating in the Spire's Forge.</p>
+  </header>
+  <main id="toolbox"></main>
+  <script type="module">
+    // The shell auto-loads every planned tool module. Each agent adds ONE file
+    // — tools/<id>.js exporting `mount(root)` — and never touches this shell,
+    // so tools ship as independent, conflict-free pull requests. A module not
+    // built yet simply doesn't appear.
+    const TOOLS = ["clock", "json-formatter", "base64", "color-converter", "timestamp"];
+    const root = document.getElementById("toolbox");
+    let mounted = 0;
+    await Promise.all(TOOLS.map(async (id) => {
+      try {
+        const mod = await import(`./tools/${id}.js`);
+        const card = document.createElement("section");
+        card.className = "tool";
+        card.dataset.tool = id;
+        mod.mount(card);
+        root.append(card);
+        mounted++;
+      } catch { /* not built yet — skip silently */ }
+    }));
+    if (!mounted) {
+      const p = document.createElement("p");
+      p.className = "empty";
+      p.textContent = "No tools built yet — the agents are on their way.";
+      root.append(p);
+    }
+  </script>
+</body>
+</html>
